@@ -1,0 +1,75 @@
+-- Testbench for Multiplier_Divider
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_TEXTIO.ALL;
+use STD.TEXTIO.ALL;
+
+entity Multiplier_Divider_TB is
+end Multiplier_Divider_TB;
+
+architecture Structural of Multiplier_Divider_TB is
+    constant CLK_PERIOD : time := 10 ns; -- Clock period
+
+    signal clk : STD_LOGIC := '0';
+    signal reset : STD_LOGIC := '0';
+    signal operation_select : STD_LOGIC; -- Select multiplication or division
+    signal data_in : STD_LOGIC_VECTOR(63 downto 0) := (others => '0'); -- Input data
+    signal result_out : STD_LOGIC_VECTOR(127 downto 0);
+
+begin
+
+    -- Clock generator process
+    process
+    begin
+        while now < 1000 ns loop -- Run for 100 clock cycles
+            clk <= not clk;
+            wait for CLK_PERIOD / 2;
+        end loop;
+        wait;
+    end process;
+
+    -- Stimulate reset
+    process
+    begin
+        reset <= '1';
+        wait for CLK_PERIOD;
+        reset <= '0';
+        wait;
+    end process;
+
+    -- Process for user interaction
+    process
+        variable operation_input : LINE;
+        variable data_input : LINE;
+        variable op_temp : STD_LOGIC;
+        variable data_temp : STD_LOGIC_VECTOR(63 downto 0);
+    begin
+        wait until now > 1 ns;
+
+        while now < 1000 ns loop
+            wait for CLK_PERIOD * 2;
+
+            -- Output prompt for operation select
+            write(output, "Enter operation (0 for division, 1 for multiplication): ");
+            readline(input, operation_input); -- Read operation select directly
+            read(operation_input, op_temp);
+            operation_select <= op_temp;
+
+            wait for CLK_PERIOD * 2;
+
+            -- Output prompt for input value
+            write(output, "Enter input value: ");
+            readline(input, data_input); -- Read data_in directly
+            read(data_input, data_temp);
+            data_in <= data_temp;
+        end loop;
+
+        wait;
+    end process;
+
+    -- Continue simulation...
+    -- You can read more inputs and observe the output
+
+    -- No concurrent statements outside of processes
+
+end Structural;
