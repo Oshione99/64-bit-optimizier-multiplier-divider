@@ -1,0 +1,39 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_SIGNED.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_TEXTIO.ALL;
+
+entity ALU is
+    Port ( clk : in STD_LOGIC;
+           reset : in STD_LOGIC;
+           data_a : in STD_LOGIC_VECTOR(63 downto 0);
+           data_b : in STD_LOGIC_VECTOR(63 downto 0);
+           op : in STD_LOGIC_VECTOR(2 downto 0);
+           result_out : out STD_LOGIC_VECTOR(63 downto 0));
+end ALU;
+
+architecture Structural of ALU is
+    signal reg : STD_LOGIC_VECTOR(63 downto 0);
+    signal reg_unsigned : UNSIGNED(63 downto 0);
+begin
+    process(clk, reset)
+    begin
+        if reset = '1' then
+            reg <= (others => '0');
+        elsif rising_edge(clk) then
+            reg_unsigned <= unsigned(data_a); -- Convert data_a to unsigned
+            case op is
+                when "000" => reg_unsigned <= reg_unsigned + unsigned(data_b); -- Addition
+                when "001" => reg_unsigned <= reg_unsigned - unsigned(data_b); -- Subtraction
+                when "010" => reg <= data_a and data_b; -- AND operation on STD_LOGIC_VECTOR
+                when "011" => reg <= data_a or data_b;  -- OR operation on STD_LOGIC_VECTOR
+                when others => reg <= (others => '0');
+            end case;
+            reg <= std_logic_vector(reg_unsigned); -- Convert result back to STD_LOGIC_VECTOR
+        end if;
+    end process;
+
+    result_out <= reg;
+end Structural;
