@@ -1,0 +1,28 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_TEXTIO.ALL;
+
+entity Product_Remainder is
+    Port ( clk : in STD_LOGIC;
+           reset : in STD_LOGIC;
+           data_in : in STD_LOGIC_VECTOR(127 downto 0);
+           write : in STD_LOGIC;
+           product_remainder_out : out STD_LOGIC_VECTOR(127 downto 0));
+end Product_Remainder;
+
+architecture Structural of Product_Remainder is
+    signal reg : STD_LOGIC_VECTOR(127 downto 0);
+begin
+    process(clk, reset)
+    begin
+        if reset = '1' then
+            reg <= (others => '0');
+        elsif rising_edge(clk) then
+            if write = '1' then
+                reg <= data_in;
+            end if;
+        end if;
+    end process;
+
+    product_remainder_out <= reg;
+end Structural;
