@@ -1,0 +1,98 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_TEXTIO.ALL;
+
+entity Multiplier_Divider is
+    Port ( clk : in STD_LOGIC;
+           reset : in STD_LOGIC;
+           operation_select : in STD_LOGIC;
+           is_multiplier : in STD_LOGIC;
+           data_in : in STD_LOGIC_VECTOR(63 downto 0);
+           result_out : out STD_LOGIC_VECTOR(127 downto 0));
+end Multiplier_Divider;
+
+architecture Structural of Multiplier_Divider is
+    component Multiplicand_Divisor
+        Port ( clk : in STD_LOGIC;
+               reset : in STD_LOGIC;
+               data_in : in STD_LOGIC_VECTOR(63 downto 0);
+               is_multiplier : in STD_LOGIC;
+               multiplicand_divisor_out : out STD_LOGIC_VECTOR(63 downto 0));
+    end component;
+
+    component ALU
+        Port ( clk : in STD_LOGIC;
+               reset : in STD_LOGIC;
+               data_a : in STD_LOGIC_VECTOR(63 downto 0);
+               data_b : in STD_LOGIC_VECTOR(63 downto 0);
+               op : in STD_LOGIC_VECTOR(2 downto 0);
+               result_out : out STD_LOGIC_VECTOR(63 downto 0));
+    end component;
+
+    component Control_Unit
+        Port ( clk : in STD_LOGIC;
+               reset : in STD_LOGIC;
+               is_multiplier : in STD_LOGIC;
+               operation_select : in STD_LOGIC;
+               shift_left : out STD_LOGIC;
+               shift_right : out STD_LOGIC;
+               write_enable : out STD_LOGIC);
+    end component;
+
+    component Product_Remainder
+        Port ( clk : in STD_LOGIC;
+               reset : in STD_LOGIC;
+               data_in : in STD_LOGIC_VECTOR(191 downto 0);  -- Increased width for concatenation
+               write : in STD_LOGIC;
+               product_remainder_out : out STD_LOGIC_VECTOR(127 downto 0));
+    end component;
+
+    signal multiplicand_divisor_out : STD_LOGIC_VECTOR(63 downto 0);
+    signal alu_result : STD_LOGIC_VECTOR(63 downto 0);
+    signal control_shift_left : STD_LOGIC;
+    signal control_shift_right : STD_LOGIC;
+    signal control_write : STD_LOGIC;
+    signal concat_data_in : STD_LOGIC_VECTOR(191 downto 0);  -- Temporary signal for concatenation
+    signal product_remainder_out : STD_LOGIC_VECTOR(127 downto 0);
+begin
+    Multiplicand_Divisor_inst : Multiplicand_Divisor port map (
+        clk => clk,
+        reset => reset,
+        data_in => data_in,
+        is_multiplier => is_multiplier,
+        multiplicand_divisor_out => multiplicand_divisor_out
+    );
+
+    ALU_inst : ALU port map (
+        clk => clk,
+        reset => reset,
+        data_a => multiplicand_divisor_out,
+        data_b => multiplicand_divisor_out,
+        op => (others => '0'), -- No operations needed here
+        result_out => alu_result
+    );
+
+    Control_Unit_inst : Control_Unit port map (
+        clk => clk,
+        reset => reset,
+        is_multiplier => is_multiplier,
+        operation_select => operation_select,
+        shift_left => control_shift_left,
+        shift_right => control_shift_right,
+        write_enable => control_write
+    );
+
+    -- Concatenate alu_result with the high bits of product_remainder_out
+    concat_data_in <= alu_result & product_remainder_out(127 downto 0);
+
+    Product_Remainder_inst : Product_Remainder port map (
+        clk => clk,
+        reset => reset,
+        data_in => concat_data_in,  -- Use the concatenated signal
+        write => control_write,
+        product_remainder_out => product_remainder_out
+    );
+
+    -- Output
+    result_out <= product_remainder_out;
+end Structural;
