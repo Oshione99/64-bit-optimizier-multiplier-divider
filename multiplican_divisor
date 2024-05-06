@@ -1,0 +1,30 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_TEXTIO.ALL;
+
+entity Multiplicand_Divisor is
+    Port ( clk : in STD_LOGIC;
+           reset : in STD_LOGIC;
+           data_in : in STD_LOGIC_VECTOR(63 downto 0);
+           is_multiplier : in STD_LOGIC;
+           multiplicand_divisor_out : out STD_LOGIC_VECTOR(63 downto 0));
+end Multiplicand_Divisor;
+
+architecture Structural of Multiplicand_Divisor is
+    signal reg : STD_LOGIC_VECTOR(63 downto 0);
+begin
+    process(clk, reset)
+    begin
+        if reset = '1' then
+            reg <= (others => '0');
+        elsif rising_edge(clk) then
+            if is_multiplier = '1' then
+                reg <= data_in;
+            else
+                reg <= data_in; -- Store divisor when in division mode
+            end if;
+        end if;
+    end process;
+
+    multiplicand_divisor_out <= reg;
+end Structural;
