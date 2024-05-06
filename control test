@@ -1,0 +1,35 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_TEXTIO.ALL;
+
+entity Control_Unit is
+    Port ( clk : in STD_LOGIC;
+           reset : in STD_LOGIC;
+           is_multiplier : in STD_LOGIC;
+           operation_select : in STD_LOGIC;
+           shift_left : out STD_LOGIC;
+           shift_right : out STD_LOGIC;
+           write_enable : out STD_LOGIC);
+end Control_Unit;
+
+architecture Structural of Control_Unit is
+begin
+    process(clk, reset)
+    begin
+        if reset = '1' then
+            shift_left <= '0';
+            shift_right <= '0';
+            write_enable <= '0';
+        elsif rising_edge(clk) then
+            if is_multiplier = '1' then
+                shift_left <= operation_select;
+                shift_right <= '0';
+                write_enable <= operation_select;
+            else
+                shift_left <= '0';
+                shift_right <= operation_select;
+                write_enable <= operation_select;
+            end if;
+        end if;
+    end process;
+end Structural;
